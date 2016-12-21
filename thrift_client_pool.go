@@ -3,10 +3,10 @@ package thrift_clientpool
 import (
 	"errors"
 	"fmt"
+	"log"
 	"sync"
 	"sync/atomic"
 	"time"
-	"log"
 )
 
 var (
@@ -59,6 +59,7 @@ func NewThriftClientPool(name string, dialFn func(tag string) (connection interf
 		KeepAlive:         keepAliveFn,
 		MaxPoolSize:       poolSize,
 		KeepAliveInterval: DefaultKeepAliveInterval,
+		CreateNewInterval: DefaultCreateNewInterval,
 		DialRetryCount:    DefaultDialRetryCount,
 		DialRetryInterval: DefaultRetryInterval,
 	}
