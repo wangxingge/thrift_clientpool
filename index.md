@@ -1,37 +1,19 @@
-## Welcome to GitHub Pages
+## Welcome to use thrift client pool.
 
-You can use the [editor on GitHub](https://github.com/wangxingge/thrift_clientpool/edit/master/index.md) to maintain and preview the content for your website in Markdown files.
+Why wrote thrift client pool, cause of thrift does not provide client pool for golang version.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+# You should provide {...}
+1. A function to dail your server.
+2. A function to keep alive with your server, keep alive is simple but i think you'll need customize your keep alive logic.
+3. Optional function to close the connection with your server.
 
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/wangxingge/thrift_clientpool/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+# You could configure {...}
+1. Max pool size.
+2. Initial connected pool size.
+3. Intervals:
+        - Keep alive interval,
+        - Reconnect interval.
+        - Create new interval.
 
 ### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+You can send message to me on github, and my mail: wangxingge83@gmail.com
