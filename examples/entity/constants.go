@@ -16,6 +16,7 @@ var _ = bytes.Equal
 
 const ServiceTag_BookService = "BookService"
 const ServiceTag_UserService = "UserService"
+const ServiceTag_KeepAliveService = "KeepAliveService"
 
 func init() {
 }

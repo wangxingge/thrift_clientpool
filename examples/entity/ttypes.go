@@ -18,16 +18,18 @@ var GoUnusedProtection__ int
 
 // Attributes:
 //  - BookId
+//  - BookName
 //  - Author
 //  - Price
 //  - Date
 //  - Cover
 type Book struct {
-	BookId string  `thrift:"BookId,1,required" json:"BookId"`
-	Author string  `thrift:"Author,2,required" json:"Author"`
-	Price  *string `thrift:"Price,3" json:"Price,omitempty"`
-	Date   *string `thrift:"Date,4" json:"Date,omitempty"`
-	Cover  []byte  `thrift:"Cover,5" json:"Cover,omitempty"`
+	BookId   string  `thrift:"BookId,1,required" json:"BookId"`
+	BookName string  `thrift:"BookName,2,required" json:"BookName"`
+	Author   string  `thrift:"Author,3,required" json:"Author"`
+	Price    *string `thrift:"Price,4" json:"Price,omitempty"`
+	Date     *string `thrift:"Date,5" json:"Date,omitempty"`
+	Cover    []byte  `thrift:"Cover,6" json:"Cover,omitempty"`
 }
 
 func NewBook() *Book {
@@ -36,6 +38,10 @@ func NewBook() *Book {
 
 func (p *Book) GetBookId() string {
 	return p.BookId
+}
+
+func (p *Book) GetBookName() string {
+	return p.BookName
 }
 
 func (p *Book) GetAuthor() string {
@@ -83,6 +89,7 @@ func (p *Book) Read(iprot thrift.TProtocol) error {
 	}
 
 	var issetBookId bool = false
+	var issetBookName bool = false
 	var issetAuthor bool = false
 
 	for {
@@ -103,17 +110,22 @@ func (p *Book) Read(iprot thrift.TProtocol) error {
 			if err := p.readField2(iprot); err != nil {
 				return err
 			}
-			issetAuthor = true
+			issetBookName = true
 		case 3:
 			if err := p.readField3(iprot); err != nil {
 				return err
 			}
+			issetAuthor = true
 		case 4:
 			if err := p.readField4(iprot); err != nil {
 				return err
 			}
 		case 5:
 			if err := p.readField5(iprot); err != nil {
+				return err
+			}
+		case 6:
+			if err := p.readField6(iprot); err != nil {
 				return err
 			}
 		default:
@@ -130,6 +142,9 @@ func (p *Book) Read(iprot thrift.TProtocol) error {
 	}
 	if !issetBookId {
 		return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field BookId is not set"))
+	}
+	if !issetBookName {
+		return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field BookName is not set"))
 	}
 	if !issetAuthor {
 		return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field Author is not set"))
@@ -150,7 +165,7 @@ func (p *Book) readField2(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadString(); err != nil {
 		return thrift.PrependError("error reading field 2: ", err)
 	} else {
-		p.Author = v
+		p.BookName = v
 	}
 	return nil
 }
@@ -159,7 +174,7 @@ func (p *Book) readField3(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadString(); err != nil {
 		return thrift.PrependError("error reading field 3: ", err)
 	} else {
-		p.Price = &v
+		p.Author = v
 	}
 	return nil
 }
@@ -168,14 +183,23 @@ func (p *Book) readField4(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadString(); err != nil {
 		return thrift.PrependError("error reading field 4: ", err)
 	} else {
-		p.Date = &v
+		p.Price = &v
 	}
 	return nil
 }
 
 func (p *Book) readField5(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadBinary(); err != nil {
+	if v, err := iprot.ReadString(); err != nil {
 		return thrift.PrependError("error reading field 5: ", err)
+	} else {
+		p.Date = &v
+	}
+	return nil
+}
+
+func (p *Book) readField6(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadBinary(); err != nil {
+		return thrift.PrependError("error reading field 6: ", err)
 	} else {
 		p.Cover = v
 	}
@@ -201,6 +225,9 @@ func (p *Book) Write(oprot thrift.TProtocol) error {
 	if err := p.writeField5(oprot); err != nil {
 		return err
 	}
+	if err := p.writeField6(oprot); err != nil {
+		return err
+	}
 	if err := oprot.WriteFieldStop(); err != nil {
 		return thrift.PrependError("write field stop error: ", err)
 	}
@@ -224,58 +251,71 @@ func (p *Book) writeField1(oprot thrift.TProtocol) (err error) {
 }
 
 func (p *Book) writeField2(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("Author", thrift.STRING, 2); err != nil {
-		return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:Author: ", p), err)
+	if err := oprot.WriteFieldBegin("BookName", thrift.STRING, 2); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:BookName: ", p), err)
 	}
-	if err := oprot.WriteString(string(p.Author)); err != nil {
-		return thrift.PrependError(fmt.Sprintf("%T.Author (2) field write error: ", p), err)
+	if err := oprot.WriteString(string(p.BookName)); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T.BookName (2) field write error: ", p), err)
 	}
 	if err := oprot.WriteFieldEnd(); err != nil {
-		return thrift.PrependError(fmt.Sprintf("%T write field end error 2:Author: ", p), err)
+		return thrift.PrependError(fmt.Sprintf("%T write field end error 2:BookName: ", p), err)
 	}
 	return err
 }
 
 func (p *Book) writeField3(oprot thrift.TProtocol) (err error) {
-	if p.IsSetPrice() {
-		if err := oprot.WriteFieldBegin("Price", thrift.STRING, 3); err != nil {
-			return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:Price: ", p), err)
-		}
-		if err := oprot.WriteString(string(*p.Price)); err != nil {
-			return thrift.PrependError(fmt.Sprintf("%T.Price (3) field write error: ", p), err)
-		}
-		if err := oprot.WriteFieldEnd(); err != nil {
-			return thrift.PrependError(fmt.Sprintf("%T write field end error 3:Price: ", p), err)
-		}
+	if err := oprot.WriteFieldBegin("Author", thrift.STRING, 3); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:Author: ", p), err)
+	}
+	if err := oprot.WriteString(string(p.Author)); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T.Author (3) field write error: ", p), err)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field end error 3:Author: ", p), err)
 	}
 	return err
 }
 
 func (p *Book) writeField4(oprot thrift.TProtocol) (err error) {
-	if p.IsSetDate() {
-		if err := oprot.WriteFieldBegin("Date", thrift.STRING, 4); err != nil {
-			return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:Date: ", p), err)
+	if p.IsSetPrice() {
+		if err := oprot.WriteFieldBegin("Price", thrift.STRING, 4); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:Price: ", p), err)
 		}
-		if err := oprot.WriteString(string(*p.Date)); err != nil {
-			return thrift.PrependError(fmt.Sprintf("%T.Date (4) field write error: ", p), err)
+		if err := oprot.WriteString(string(*p.Price)); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T.Price (4) field write error: ", p), err)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
-			return thrift.PrependError(fmt.Sprintf("%T write field end error 4:Date: ", p), err)
+			return thrift.PrependError(fmt.Sprintf("%T write field end error 4:Price: ", p), err)
 		}
 	}
 	return err
 }
 
 func (p *Book) writeField5(oprot thrift.TProtocol) (err error) {
-	if p.IsSetCover() {
-		if err := oprot.WriteFieldBegin("Cover", thrift.STRING, 5); err != nil {
-			return thrift.PrependError(fmt.Sprintf("%T write field begin error 5:Cover: ", p), err)
+	if p.IsSetDate() {
+		if err := oprot.WriteFieldBegin("Date", thrift.STRING, 5); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T write field begin error 5:Date: ", p), err)
 		}
-		if err := oprot.WriteBinary(p.Cover); err != nil {
-			return thrift.PrependError(fmt.Sprintf("%T.Cover (5) field write error: ", p), err)
+		if err := oprot.WriteString(string(*p.Date)); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T.Date (5) field write error: ", p), err)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
-			return thrift.PrependError(fmt.Sprintf("%T write field end error 5:Cover: ", p), err)
+			return thrift.PrependError(fmt.Sprintf("%T write field end error 5:Date: ", p), err)
+		}
+	}
+	return err
+}
+
+func (p *Book) writeField6(oprot thrift.TProtocol) (err error) {
+	if p.IsSetCover() {
+		if err := oprot.WriteFieldBegin("Cover", thrift.STRING, 6); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T write field begin error 6:Cover: ", p), err)
+		}
+		if err := oprot.WriteBinary(p.Cover); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T.Cover (6) field write error: ", p), err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T write field end error 6:Cover: ", p), err)
 		}
 	}
 	return err
