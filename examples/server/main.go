@@ -30,7 +30,6 @@ func main() {
 	multi_processor := thrift.NewTMultiplexedProcessor()
 	multi_processor.RegisterProcessor(entity.ServiceTag_BookService, bookservice.NewBookServiceProcessor(&impl.BookServiceImpl{}))
 	multi_processor.RegisterProcessor(entity.ServiceTag_UserService, bookservice.NewUserServiceProcessor(&impl.UserServiceImpl{}))
-	multi_processor.RegisterProcessor(entity.ServiceTag_KeepAliveService, bookservice.NewKeepAliveServiceProcessor(&impl.KeepAliveImpl{}))
 	server := thrift.NewTSimpleServer4(multi_processor, serverTransport, transportFactory, binaryProtocolFactory)
 	log.Println("Service started on:", network)
 	server.Serve()

@@ -10,6 +10,7 @@ service BookService
     list<entity.Book>   GetAllBooks()
     bool                AddBook(1:entity.Book bookInfo)
     bool                RemoveBook(1:string bookId)
+    bool                DefaultKeepAlive(1:string clientId)
 }
 
 service UserService
@@ -20,9 +21,5 @@ service UserService
     bool                AddUser(1:entity.User userInfo)
     bool                RemoveUser(1:string userId)
     bool                UpdateUserAvatar(1:string userId, 2:binary avatar)
-}
-
-service KeepAliveService
-{
     bool                DefaultKeepAlive(1:string clientId)
 }

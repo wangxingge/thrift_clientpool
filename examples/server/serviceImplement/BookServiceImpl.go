@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/wangxingge/thrift_clientpool/examples/entity"
+	"log"
 )
 
 var (
@@ -46,13 +47,35 @@ func (srv *BookServiceImpl) GetBookByName(bookName string) (r *entity.Book, err 
 }
 
 func (srv *BookServiceImpl) GetAllBooks() (r []*entity.Book, err error) {
+	for _, book := range bookStore {
+		t := book
+		r = append(r, &t)
+	}
 	return
 }
 
 func (srv *BookServiceImpl) AddBook(bookInfo *entity.Book) (r bool, err error) {
-	return
+
+	if _, ok := bookStore[bookInfo.BookId]; ok {
+		bookStore[bookInfo.BookId] = *bookInfo
+		return true, nil
+	}
+
+	return false, errors.New(fmt.Sprintf("Dulplicate book %v", bookInfo.BookId))
 }
 
 func (srv *BookServiceImpl) RemoveBook(bookId string) (r bool, err error) {
+
+	if _, ok := bookStore[bookId]; ok {
+		delete(bookStore, bookId)
+	}
+
+	return true, nil
+}
+
+func (srv *BookServiceImpl) DefaultKeepAlive(clientId string) (r bool, err error) {
+
+	log.Printf("Client: %v keep alived.", clientId)
+	r = true
 	return
 }

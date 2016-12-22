@@ -1,6 +1,9 @@
 package serviceImplement
 
-import "github.com/wangxingge/thrift_clientpool/examples/entity"
+import (
+	"github.com/wangxingge/thrift_clientpool/examples/entity"
+	"log"
+)
 
 type UserServiceImpl struct {
 }
@@ -25,5 +28,12 @@ func (srv *UserServiceImpl) RemoveUser(userId string) (r bool, err error) {
 }
 
 func (srv *UserServiceImpl) UpdateUserAvatar(userId string, avatar []byte) (r bool, err error) {
+	return
+}
+
+func (srv *UserServiceImpl) DefaultKeepAlive(clientId string) (r bool, err error) {
+
+	log.Printf("Client: %v keep alived.", clientId)
+	r = true
 	return
 }

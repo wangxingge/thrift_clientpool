@@ -35,6 +35,9 @@ type UserService interface {
 	//  - UserId
 	//  - Avatar
 	UpdateUserAvatar(userId string, avatar []byte) (r bool, err error)
+	// Parameters:
+	//  - ClientId
+	DefaultKeepAlive(clientId string) (r bool, err error)
 }
 
 type UserServiceClient struct {
@@ -113,16 +116,16 @@ func (p *UserServiceClient) recvGetUserBooks() (value []*entity.Book, err error)
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error22 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error23 error
-		error23, err = error22.Read(iprot)
+		error25 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error26 error
+		error26, err = error25.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error23
+		err = error26
 		return
 	}
 	if mTypeId != thrift.REPLY {
@@ -190,16 +193,16 @@ func (p *UserServiceClient) recvGetUserInfo() (value *entity.User, err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error24 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error25 error
-		error25, err = error24.Read(iprot)
+		error27 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error28 error
+		error28, err = error27.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error25
+		err = error28
 		return
 	}
 	if mTypeId != thrift.REPLY {
@@ -263,16 +266,16 @@ func (p *UserServiceClient) recvGetAllUserInfo() (value []*entity.User, err erro
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error26 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error27 error
-		error27, err = error26.Read(iprot)
+		error29 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error30 error
+		error30, err = error29.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error27
+		err = error30
 		return
 	}
 	if mTypeId != thrift.REPLY {
@@ -340,16 +343,16 @@ func (p *UserServiceClient) recvAddUser() (value bool, err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error28 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error29 error
-		error29, err = error28.Read(iprot)
+		error31 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error32 error
+		error32, err = error31.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error29
+		err = error32
 		return
 	}
 	if mTypeId != thrift.REPLY {
@@ -417,16 +420,16 @@ func (p *UserServiceClient) recvRemoveUser() (value bool, err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error30 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error31 error
-		error31, err = error30.Read(iprot)
+		error33 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error34 error
+		error34, err = error33.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error31
+		err = error34
 		return
 	}
 	if mTypeId != thrift.REPLY {
@@ -496,16 +499,16 @@ func (p *UserServiceClient) recvUpdateUserAvatar() (value bool, err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error32 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error33 error
-		error33, err = error32.Read(iprot)
+		error35 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error36 error
+		error36, err = error35.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error33
+		err = error36
 		return
 	}
 	if mTypeId != thrift.REPLY {
@@ -513,6 +516,83 @@ func (p *UserServiceClient) recvUpdateUserAvatar() (value bool, err error) {
 		return
 	}
 	result := UserServiceUpdateUserAvatarResult{}
+	if err = result.Read(iprot); err != nil {
+		return
+	}
+	if err = iprot.ReadMessageEnd(); err != nil {
+		return
+	}
+	value = result.GetSuccess()
+	return
+}
+
+// Parameters:
+//  - ClientId
+func (p *UserServiceClient) DefaultKeepAlive(clientId string) (r bool, err error) {
+	if err = p.sendDefaultKeepAlive(clientId); err != nil {
+		return
+	}
+	return p.recvDefaultKeepAlive()
+}
+
+func (p *UserServiceClient) sendDefaultKeepAlive(clientId string) (err error) {
+	oprot := p.OutputProtocol
+	if oprot == nil {
+		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+		p.OutputProtocol = oprot
+	}
+	p.SeqId++
+	if err = oprot.WriteMessageBegin("DefaultKeepAlive", thrift.CALL, p.SeqId); err != nil {
+		return
+	}
+	args := UserServiceDefaultKeepAliveArgs{
+		ClientId: clientId,
+	}
+	if err = args.Write(oprot); err != nil {
+		return
+	}
+	if err = oprot.WriteMessageEnd(); err != nil {
+		return
+	}
+	return oprot.Flush()
+}
+
+func (p *UserServiceClient) recvDefaultKeepAlive() (value bool, err error) {
+	iprot := p.InputProtocol
+	if iprot == nil {
+		iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+		p.InputProtocol = iprot
+	}
+	method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+	if err != nil {
+		return
+	}
+	if method != "DefaultKeepAlive" {
+		err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "DefaultKeepAlive failed: wrong method name")
+		return
+	}
+	if p.SeqId != seqId {
+		err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "DefaultKeepAlive failed: out of sequence response")
+		return
+	}
+	if mTypeId == thrift.EXCEPTION {
+		error37 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error38 error
+		error38, err = error37.Read(iprot)
+		if err != nil {
+			return
+		}
+		if err = iprot.ReadMessageEnd(); err != nil {
+			return
+		}
+		err = error38
+		return
+	}
+	if mTypeId != thrift.REPLY {
+		err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "DefaultKeepAlive failed: invalid message type")
+		return
+	}
+	result := UserServiceDefaultKeepAliveResult{}
 	if err = result.Read(iprot); err != nil {
 		return
 	}
@@ -543,14 +623,15 @@ func (p *UserServiceProcessor) ProcessorMap() map[string]thrift.TProcessorFuncti
 
 func NewUserServiceProcessor(handler UserService) *UserServiceProcessor {
 
-	self34 := &UserServiceProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
-	self34.processorMap["GetUserBooks"] = &userServiceProcessorGetUserBooks{handler: handler}
-	self34.processorMap["GetUserInfo"] = &userServiceProcessorGetUserInfo{handler: handler}
-	self34.processorMap["GetAllUserInfo"] = &userServiceProcessorGetAllUserInfo{handler: handler}
-	self34.processorMap["AddUser"] = &userServiceProcessorAddUser{handler: handler}
-	self34.processorMap["RemoveUser"] = &userServiceProcessorRemoveUser{handler: handler}
-	self34.processorMap["UpdateUserAvatar"] = &userServiceProcessorUpdateUserAvatar{handler: handler}
-	return self34
+	self39 := &UserServiceProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
+	self39.processorMap["GetUserBooks"] = &userServiceProcessorGetUserBooks{handler: handler}
+	self39.processorMap["GetUserInfo"] = &userServiceProcessorGetUserInfo{handler: handler}
+	self39.processorMap["GetAllUserInfo"] = &userServiceProcessorGetAllUserInfo{handler: handler}
+	self39.processorMap["AddUser"] = &userServiceProcessorAddUser{handler: handler}
+	self39.processorMap["RemoveUser"] = &userServiceProcessorRemoveUser{handler: handler}
+	self39.processorMap["UpdateUserAvatar"] = &userServiceProcessorUpdateUserAvatar{handler: handler}
+	self39.processorMap["DefaultKeepAlive"] = &userServiceProcessorDefaultKeepAlive{handler: handler}
+	return self39
 }
 
 func (p *UserServiceProcessor) Process(iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -563,12 +644,12 @@ func (p *UserServiceProcessor) Process(iprot, oprot thrift.TProtocol) (success b
 	}
 	iprot.Skip(thrift.STRUCT)
 	iprot.ReadMessageEnd()
-	x35 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function "+name)
+	x40 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function "+name)
 	oprot.WriteMessageBegin(name, thrift.EXCEPTION, seqId)
-	x35.Write(oprot)
+	x40.Write(oprot)
 	oprot.WriteMessageEnd()
 	oprot.Flush()
-	return false, x35
+	return false, x40
 
 }
 
@@ -860,6 +941,54 @@ func (p *userServiceProcessorUpdateUserAvatar) Process(seqId int32, iprot, oprot
 	return true, err
 }
 
+type userServiceProcessorDefaultKeepAlive struct {
+	handler UserService
+}
+
+func (p *userServiceProcessorDefaultKeepAlive) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := UserServiceDefaultKeepAliveArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("DefaultKeepAlive", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush()
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	result := UserServiceDefaultKeepAliveResult{}
+	var retval bool
+	var err2 error
+	if retval, err2 = p.handler.DefaultKeepAlive(args.ClientId); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing DefaultKeepAlive: "+err2.Error())
+		oprot.WriteMessageBegin("DefaultKeepAlive", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush()
+		return true, err2
+	} else {
+		result.Success = &retval
+	}
+	if err2 = oprot.WriteMessageBegin("DefaultKeepAlive", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
 // HELPER FUNCTIONS AND STRUCTURES
 
 // Attributes:
@@ -1013,11 +1142,11 @@ func (p *UserServiceGetUserBooksResult) readField0(iprot thrift.TProtocol) error
 	tSlice := make([]*entity.Book, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		_elem36 := &entity.Book{}
-		if err := _elem36.Read(iprot); err != nil {
-			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem36), err)
+		_elem41 := &entity.Book{}
+		if err := _elem41.Read(iprot); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem41), err)
 		}
-		p.Success = append(p.Success, _elem36)
+		p.Success = append(p.Success, _elem41)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return thrift.PrependError("error reading list end: ", err)
@@ -1376,11 +1505,11 @@ func (p *UserServiceGetAllUserInfoResult) readField0(iprot thrift.TProtocol) err
 	tSlice := make([]*entity.User, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		_elem37 := &entity.User{}
-		if err := _elem37.Read(iprot); err != nil {
-			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem37), err)
+		_elem42 := &entity.User{}
+		if err := _elem42.Read(iprot); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem42), err)
 		}
-		p.Success = append(p.Success, _elem37)
+		p.Success = append(p.Success, _elem42)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return thrift.PrependError("error reading list end: ", err)
@@ -2054,4 +2183,197 @@ func (p *UserServiceUpdateUserAvatarResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("UserServiceUpdateUserAvatarResult(%+v)", *p)
+}
+
+// Attributes:
+//  - ClientId
+type UserServiceDefaultKeepAliveArgs struct {
+	ClientId string `thrift:"clientId,1" json:"clientId"`
+}
+
+func NewUserServiceDefaultKeepAliveArgs() *UserServiceDefaultKeepAliveArgs {
+	return &UserServiceDefaultKeepAliveArgs{}
+}
+
+func (p *UserServiceDefaultKeepAliveArgs) GetClientId() string {
+	return p.ClientId
+}
+func (p *UserServiceDefaultKeepAliveArgs) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.readField1(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+	}
+	return nil
+}
+
+func (p *UserServiceDefaultKeepAliveArgs) readField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return thrift.PrependError("error reading field 1: ", err)
+	} else {
+		p.ClientId = v
+	}
+	return nil
+}
+
+func (p *UserServiceDefaultKeepAliveArgs) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("DefaultKeepAlive_args"); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return thrift.PrependError("write field stop error: ", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return thrift.PrependError("write struct stop error: ", err)
+	}
+	return nil
+}
+
+func (p *UserServiceDefaultKeepAliveArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("clientId", thrift.STRING, 1); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:clientId: ", p), err)
+	}
+	if err := oprot.WriteString(string(p.ClientId)); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T.clientId (1) field write error: ", p), err)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field end error 1:clientId: ", p), err)
+	}
+	return err
+}
+
+func (p *UserServiceDefaultKeepAliveArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("UserServiceDefaultKeepAliveArgs(%+v)", *p)
+}
+
+// Attributes:
+//  - Success
+type UserServiceDefaultKeepAliveResult struct {
+	Success *bool `thrift:"success,0" json:"success,omitempty"`
+}
+
+func NewUserServiceDefaultKeepAliveResult() *UserServiceDefaultKeepAliveResult {
+	return &UserServiceDefaultKeepAliveResult{}
+}
+
+var UserServiceDefaultKeepAliveResult_Success_DEFAULT bool
+
+func (p *UserServiceDefaultKeepAliveResult) GetSuccess() bool {
+	if !p.IsSetSuccess() {
+		return UserServiceDefaultKeepAliveResult_Success_DEFAULT
+	}
+	return *p.Success
+}
+func (p *UserServiceDefaultKeepAliveResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *UserServiceDefaultKeepAliveResult) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 0:
+			if err := p.readField0(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+	}
+	return nil
+}
+
+func (p *UserServiceDefaultKeepAliveResult) readField0(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadBool(); err != nil {
+		return thrift.PrependError("error reading field 0: ", err)
+	} else {
+		p.Success = &v
+	}
+	return nil
+}
+
+func (p *UserServiceDefaultKeepAliveResult) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("DefaultKeepAlive_result"); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+	}
+	if err := p.writeField0(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return thrift.PrependError("write field stop error: ", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return thrift.PrependError("write struct stop error: ", err)
+	}
+	return nil
+}
+
+func (p *UserServiceDefaultKeepAliveResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err := oprot.WriteFieldBegin("success", thrift.BOOL, 0); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err)
+		}
+		if err := oprot.WriteBool(bool(*p.Success)); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err)
+		}
+	}
+	return err
+}
+
+func (p *UserServiceDefaultKeepAliveResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("UserServiceDefaultKeepAliveResult(%+v)", *p)
 }

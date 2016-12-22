@@ -18,6 +18,8 @@ var (
 
 type ThriftClientPool struct {
 	Name              string
+	Address           string
+	Port              string
 	Dial              func(tag string) (connection interface{}, err error)
 	Close             func(tag string, connection interface{}) (err error)
 	KeepAlive         func(tag string, connection interface{}) (err error)
@@ -34,7 +36,7 @@ type ThriftClientPool struct {
 	isStopped         bool
 }
 
-func NewThriftClientPool(name string, dialFn func(tag string) (connection interface{}, err error), closeFn func(tag string, connection interface{}) (err error), keepAliveFn func(tag string, connection interface{}) (err error), poolSize, initialPoolSize int) (*ThriftClientPool, error) {
+func NewThriftClientPool(name, address, port string, dialFn func() (connection interface{}, err error), closeFn func(connection interface{}) (err error), keepAliveFn func(connection interface{}) (err error), poolSize, initialPoolSize int) (*ThriftClientPool, error) {
 
 	if dialFn == nil || closeFn == nil || keepAliveFn == nil {
 		return nil, errors.New("function not specified.")
@@ -54,6 +56,8 @@ func NewThriftClientPool(name string, dialFn func(tag string) (connection interf
 
 	pool := &ThriftClientPool{
 		Name:              name,
+		Address:           address,
+		Port:              port,
 		Dial:              dialFn,
 		Close:             closeFn,
 		KeepAlive:         keepAliveFn,
@@ -76,10 +80,12 @@ func NewThriftClientPool(name string, dialFn func(tag string) (connection interf
 		}
 	}
 
-	go pool.retryLoop()
-	go pool.keepAliveLoop()
-
 	return pool, nil
+}
+
+func (p *ThriftClientPool) Start() {
+	go p.retryLoop()
+	go p.keepAliveLoop()
 }
 
 func (p *ThriftClientPool) Get() (connection interface{}, err error) {

@@ -31,6 +31,9 @@ type BookService interface {
 	// Parameters:
 	//  - BookId
 	RemoveBook(bookId string) (r bool, err error)
+	// Parameters:
+	//  - ClientId
+	DefaultKeepAlive(clientId string) (r bool, err error)
 }
 
 type BookServiceClient struct {
@@ -440,6 +443,83 @@ func (p *BookServiceClient) recvRemoveBook() (value bool, err error) {
 	return
 }
 
+// Parameters:
+//  - ClientId
+func (p *BookServiceClient) DefaultKeepAlive(clientId string) (r bool, err error) {
+	if err = p.sendDefaultKeepAlive(clientId); err != nil {
+		return
+	}
+	return p.recvDefaultKeepAlive()
+}
+
+func (p *BookServiceClient) sendDefaultKeepAlive(clientId string) (err error) {
+	oprot := p.OutputProtocol
+	if oprot == nil {
+		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+		p.OutputProtocol = oprot
+	}
+	p.SeqId++
+	if err = oprot.WriteMessageBegin("DefaultKeepAlive", thrift.CALL, p.SeqId); err != nil {
+		return
+	}
+	args := BookServiceDefaultKeepAliveArgs{
+		ClientId: clientId,
+	}
+	if err = args.Write(oprot); err != nil {
+		return
+	}
+	if err = oprot.WriteMessageEnd(); err != nil {
+		return
+	}
+	return oprot.Flush()
+}
+
+func (p *BookServiceClient) recvDefaultKeepAlive() (value bool, err error) {
+	iprot := p.InputProtocol
+	if iprot == nil {
+		iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+		p.InputProtocol = iprot
+	}
+	method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+	if err != nil {
+		return
+	}
+	if method != "DefaultKeepAlive" {
+		err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "DefaultKeepAlive failed: wrong method name")
+		return
+	}
+	if p.SeqId != seqId {
+		err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "DefaultKeepAlive failed: out of sequence response")
+		return
+	}
+	if mTypeId == thrift.EXCEPTION {
+		error10 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error11 error
+		error11, err = error10.Read(iprot)
+		if err != nil {
+			return
+		}
+		if err = iprot.ReadMessageEnd(); err != nil {
+			return
+		}
+		err = error11
+		return
+	}
+	if mTypeId != thrift.REPLY {
+		err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "DefaultKeepAlive failed: invalid message type")
+		return
+	}
+	result := BookServiceDefaultKeepAliveResult{}
+	if err = result.Read(iprot); err != nil {
+		return
+	}
+	if err = iprot.ReadMessageEnd(); err != nil {
+		return
+	}
+	value = result.GetSuccess()
+	return
+}
+
 type BookServiceProcessor struct {
 	processorMap map[string]thrift.TProcessorFunction
 	handler      BookService
@@ -460,13 +540,14 @@ func (p *BookServiceProcessor) ProcessorMap() map[string]thrift.TProcessorFuncti
 
 func NewBookServiceProcessor(handler BookService) *BookServiceProcessor {
 
-	self10 := &BookServiceProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
-	self10.processorMap["GetBookById"] = &bookServiceProcessorGetBookById{handler: handler}
-	self10.processorMap["GetBookByName"] = &bookServiceProcessorGetBookByName{handler: handler}
-	self10.processorMap["GetAllBooks"] = &bookServiceProcessorGetAllBooks{handler: handler}
-	self10.processorMap["AddBook"] = &bookServiceProcessorAddBook{handler: handler}
-	self10.processorMap["RemoveBook"] = &bookServiceProcessorRemoveBook{handler: handler}
-	return self10
+	self12 := &BookServiceProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
+	self12.processorMap["GetBookById"] = &bookServiceProcessorGetBookById{handler: handler}
+	self12.processorMap["GetBookByName"] = &bookServiceProcessorGetBookByName{handler: handler}
+	self12.processorMap["GetAllBooks"] = &bookServiceProcessorGetAllBooks{handler: handler}
+	self12.processorMap["AddBook"] = &bookServiceProcessorAddBook{handler: handler}
+	self12.processorMap["RemoveBook"] = &bookServiceProcessorRemoveBook{handler: handler}
+	self12.processorMap["DefaultKeepAlive"] = &bookServiceProcessorDefaultKeepAlive{handler: handler}
+	return self12
 }
 
 func (p *BookServiceProcessor) Process(iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -479,12 +560,12 @@ func (p *BookServiceProcessor) Process(iprot, oprot thrift.TProtocol) (success b
 	}
 	iprot.Skip(thrift.STRUCT)
 	iprot.ReadMessageEnd()
-	x11 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function "+name)
+	x13 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function "+name)
 	oprot.WriteMessageBegin(name, thrift.EXCEPTION, seqId)
-	x11.Write(oprot)
+	x13.Write(oprot)
 	oprot.WriteMessageEnd()
 	oprot.Flush()
-	return false, x11
+	return false, x13
 
 }
 
@@ -711,6 +792,54 @@ func (p *bookServiceProcessorRemoveBook) Process(seqId int32, iprot, oprot thrif
 		result.Success = &retval
 	}
 	if err2 = oprot.WriteMessageBegin("RemoveBook", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type bookServiceProcessorDefaultKeepAlive struct {
+	handler BookService
+}
+
+func (p *bookServiceProcessorDefaultKeepAlive) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := BookServiceDefaultKeepAliveArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("DefaultKeepAlive", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush()
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	result := BookServiceDefaultKeepAliveResult{}
+	var retval bool
+	var err2 error
+	if retval, err2 = p.handler.DefaultKeepAlive(args.ClientId); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing DefaultKeepAlive: "+err2.Error())
+		oprot.WriteMessageBegin("DefaultKeepAlive", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush()
+		return true, err2
+	} else {
+		result.Success = &retval
+	}
+	if err2 = oprot.WriteMessageBegin("DefaultKeepAlive", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -1227,11 +1356,11 @@ func (p *BookServiceGetAllBooksResult) readField0(iprot thrift.TProtocol) error 
 	tSlice := make([]*entity.Book, 0, size)
 	p.Success = tSlice
 	for i := 0; i < size; i++ {
-		_elem12 := &entity.Book{}
-		if err := _elem12.Read(iprot); err != nil {
-			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem12), err)
+		_elem14 := &entity.Book{}
+		if err := _elem14.Read(iprot); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem14), err)
 		}
-		p.Success = append(p.Success, _elem12)
+		p.Success = append(p.Success, _elem14)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return thrift.PrependError("error reading list end: ", err)
@@ -1677,4 +1806,197 @@ func (p *BookServiceRemoveBookResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("BookServiceRemoveBookResult(%+v)", *p)
+}
+
+// Attributes:
+//  - ClientId
+type BookServiceDefaultKeepAliveArgs struct {
+	ClientId string `thrift:"clientId,1" json:"clientId"`
+}
+
+func NewBookServiceDefaultKeepAliveArgs() *BookServiceDefaultKeepAliveArgs {
+	return &BookServiceDefaultKeepAliveArgs{}
+}
+
+func (p *BookServiceDefaultKeepAliveArgs) GetClientId() string {
+	return p.ClientId
+}
+func (p *BookServiceDefaultKeepAliveArgs) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.readField1(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+	}
+	return nil
+}
+
+func (p *BookServiceDefaultKeepAliveArgs) readField1(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return thrift.PrependError("error reading field 1: ", err)
+	} else {
+		p.ClientId = v
+	}
+	return nil
+}
+
+func (p *BookServiceDefaultKeepAliveArgs) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("DefaultKeepAlive_args"); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return thrift.PrependError("write field stop error: ", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return thrift.PrependError("write struct stop error: ", err)
+	}
+	return nil
+}
+
+func (p *BookServiceDefaultKeepAliveArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("clientId", thrift.STRING, 1); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:clientId: ", p), err)
+	}
+	if err := oprot.WriteString(string(p.ClientId)); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T.clientId (1) field write error: ", p), err)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field end error 1:clientId: ", p), err)
+	}
+	return err
+}
+
+func (p *BookServiceDefaultKeepAliveArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("BookServiceDefaultKeepAliveArgs(%+v)", *p)
+}
+
+// Attributes:
+//  - Success
+type BookServiceDefaultKeepAliveResult struct {
+	Success *bool `thrift:"success,0" json:"success,omitempty"`
+}
+
+func NewBookServiceDefaultKeepAliveResult() *BookServiceDefaultKeepAliveResult {
+	return &BookServiceDefaultKeepAliveResult{}
+}
+
+var BookServiceDefaultKeepAliveResult_Success_DEFAULT bool
+
+func (p *BookServiceDefaultKeepAliveResult) GetSuccess() bool {
+	if !p.IsSetSuccess() {
+		return BookServiceDefaultKeepAliveResult_Success_DEFAULT
+	}
+	return *p.Success
+}
+func (p *BookServiceDefaultKeepAliveResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *BookServiceDefaultKeepAliveResult) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 0:
+			if err := p.readField0(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+	}
+	return nil
+}
+
+func (p *BookServiceDefaultKeepAliveResult) readField0(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadBool(); err != nil {
+		return thrift.PrependError("error reading field 0: ", err)
+	} else {
+		p.Success = &v
+	}
+	return nil
+}
+
+func (p *BookServiceDefaultKeepAliveResult) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("DefaultKeepAlive_result"); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+	}
+	if err := p.writeField0(oprot); err != nil {
+		return err
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return thrift.PrependError("write field stop error: ", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return thrift.PrependError("write struct stop error: ", err)
+	}
+	return nil
+}
+
+func (p *BookServiceDefaultKeepAliveResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err := oprot.WriteFieldBegin("success", thrift.BOOL, 0); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err)
+		}
+		if err := oprot.WriteBool(bool(*p.Success)); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err)
+		}
+	}
+	return err
+}
+
+func (p *BookServiceDefaultKeepAliveResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("BookServiceDefaultKeepAliveResult(%+v)", *p)
 }

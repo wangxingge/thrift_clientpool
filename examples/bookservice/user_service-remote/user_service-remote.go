@@ -26,6 +26,7 @@ func Usage() {
 	fmt.Fprintln(os.Stderr, "  bool AddUser(User userInfo)")
 	fmt.Fprintln(os.Stderr, "  bool RemoveUser(string userId)")
 	fmt.Fprintln(os.Stderr, "  bool UpdateUserAvatar(string userId, string avatar)")
+	fmt.Fprintln(os.Stderr, "  bool DefaultKeepAlive(string clientId)")
 	fmt.Fprintln(os.Stderr)
 	os.Exit(0)
 }
@@ -153,19 +154,19 @@ func main() {
 			fmt.Fprintln(os.Stderr, "AddUser requires 1 args")
 			flag.Usage()
 		}
-		arg40 := flag.Arg(1)
-		mbTrans41 := thrift.NewTMemoryBufferLen(len(arg40))
-		defer mbTrans41.Close()
-		_, err42 := mbTrans41.WriteString(arg40)
-		if err42 != nil {
+		arg45 := flag.Arg(1)
+		mbTrans46 := thrift.NewTMemoryBufferLen(len(arg45))
+		defer mbTrans46.Close()
+		_, err47 := mbTrans46.WriteString(arg45)
+		if err47 != nil {
 			Usage()
 			return
 		}
-		factory43 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt44 := factory43.GetProtocol(mbTrans41)
+		factory48 := thrift.NewTSimpleJSONProtocolFactory()
+		jsProt49 := factory48.GetProtocol(mbTrans46)
 		argvalue0 := bookservice.NewUser()
-		err45 := argvalue0.Read(jsProt44)
-		if err45 != nil {
+		err50 := argvalue0.Read(jsProt49)
+		if err50 != nil {
 			Usage()
 			return
 		}
@@ -193,6 +194,16 @@ func main() {
 		argvalue1 := []byte(flag.Arg(2))
 		value1 := argvalue1
 		fmt.Print(client.UpdateUserAvatar(value0, value1))
+		fmt.Print("\n")
+		break
+	case "DefaultKeepAlive":
+		if flag.NArg()-1 != 1 {
+			fmt.Fprintln(os.Stderr, "DefaultKeepAlive requires 1 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		fmt.Print(client.DefaultKeepAlive(value0))
 		fmt.Print("\n")
 		break
 	case "":
