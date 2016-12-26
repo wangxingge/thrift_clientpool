@@ -181,7 +181,7 @@ func (p *ThriftClientPool) retryLoop() {
 					p.alivePool <- connection
 					log.Println("Retry Pool Success, retryCircle: ", retryCircle)
 				} else {
-					log.Println("Retry Pool Failed, retryCircle: ", retryCircle)
+					log.Printf("Retry Pool Failed for %v times.", retryCircle)
 				}
 			}
 

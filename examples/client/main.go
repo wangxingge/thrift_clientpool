@@ -20,7 +20,7 @@ var (
 
 func main() {
 
-	pool.ClientFactory.NewPoolFullParam(entity.ServiceTag_BookService, address, port, dialBook, closeBook, keepAlvieBook, 10, 1)
+	pool.ClientFactory.NewPoolFullParam(entity.ServiceTag_BookService, address, port, dialBook, closeBook, keepAlvieBook, 50, 1)
 
 	addBook()
 
@@ -44,9 +44,11 @@ func getBooks() {
 		return
 	}
 
-	v, err := tmpCon.GetAllBooks()
-	fmt.Println(err)
-	fmt.Println(v)
+	if v, err := tmpCon.GetAllBooks(); err != nil {
+		fmt.Println("Get All Books Failed: ", err)
+	} else {
+		fmt.Println(v)
+	}
 }
 
 func addBook() {
@@ -103,7 +105,11 @@ func closeBook(connection interface{}) (err error) {
 func keepAlvieBook(connection interface{}) (err error) {
 
 	if t, ok := connection.(*bookservice.BookServiceClient); ok {
-		t.DefaultKeepAlive("book service client A")
+		ok, err = t.DefaultKeepAlive("book service client A")
+		if !ok || err != nil {
+			return errors.New(fmt.Sprintf("BookService KeepAlive Failed: %v", err))
+		}
+
 	} else {
 		fmt.Printf("BookService KeepAlive Failed\n")
 		return errors.New(fmt.Sprintf("BookService KeepAlive Failed"))
