@@ -20,9 +20,9 @@ type ThriftClientPool struct {
 	Name              string
 	Address           string
 	Port              string
-	Dial              func(tag string) (connection interface{}, err error)
-	Close             func(tag string, connection interface{}) (err error)
-	KeepAlive         func(tag string, connection interface{}) (err error)
+	Dial              func() (connection interface{}, err error)
+	Close             func(connection interface{}) (err error)
+	KeepAlive         func(connection interface{}) (err error)
 	MaxPoolSize       int
 	DialRetryCount    int
 	KeepAliveInterval time.Duration
@@ -75,7 +75,7 @@ func NewThriftClientPool(name, address, port string, dialFn func() (connection i
 	pool.swapPool = make(chan interface{}, poolSize)
 
 	for i := 0; i < initialPoolSize; i++ {
-		if c, err := dialFn(pool.Name); err == nil {
+		if c, err := dialFn(); err == nil {
 			pool.alivePool <- c
 		}
 	}
@@ -100,7 +100,7 @@ func (p *ThriftClientPool) Get() (connection interface{}, err error) {
 
 			retry := 0
 			for retry < p.DialRetryCount {
-				if connection, err = p.Dial(p.Name); err != nil {
+				if connection, err = p.Dial(); err != nil {
 					retry++
 					continue
 				} else {
@@ -135,7 +135,7 @@ func (p *ThriftClientPool) Put(connection interface{}) (err error) {
 
 	if connection != nil {
 		if p.isStopped {
-			p.Close(p.Name, connection)
+			p.Close(connection)
 		} else {
 			if len(p.alivePool) < p.MaxPoolSize {
 				p.alivePool <- connection
@@ -154,7 +154,7 @@ func (p *ThriftClientPool) Release() {
 	p.isStopped = true
 
 	for connection := range p.alivePool {
-		if err := p.Close(p.Name, connection); err != nil {
+		if err := p.Close(connection); err != nil {
 			log.Println("Release connection error: ", err)
 		}
 
@@ -176,7 +176,7 @@ func (p *ThriftClientPool) retryLoop() {
 			retryCircle++
 			max := len(p.retryPool)
 			for i := 0; i < max; i++ {
-				if connection, err := p.Dial(p.Name); err == nil {
+				if connection, err := p.Dial(); err == nil {
 					<-p.retryPool
 					p.alivePool <- connection
 					log.Println("Retry Pool Success, retryCircle: ", retryCircle)
@@ -206,11 +206,11 @@ func (p *ThriftClientPool) keepAliveLoop() {
 			if len(p.alivePool) > 0 {
 				// send keep alive message to each connection
 				for connection := range p.alivePool {
-					if err := p.KeepAlive(p.Name, connection); err == nil {
-						log.Println("Keepalive Pool Success, retryCircle: ", retryCircle)
+					if err := p.KeepAlive(connection); err == nil {
+						log.Printf("Keepalive Pool Success on %v\n", fmt.Sprintf("%v  %v:%v", p.Name, p.Address, p.Port))
 						p.swapPool <- connection
 					} else {
-						log.Println("Keepalive Pool Failed, retryCircle: ", retryCircle)
+						log.Printf("Keepalive Pool Failed, retry time: %v\n", retryCircle)
 						p.retryPool <- 0
 					}
 
@@ -234,7 +234,7 @@ func (p *ThriftClientPool) keepAliveLoop() {
 
 		if p.isStopped {
 			for connection := range p.alivePool {
-				p.Close(p.Name, connection)
+				p.Close(connection)
 			}
 			break
 		}

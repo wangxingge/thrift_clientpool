@@ -3,45 +3,50 @@ package thrift_clientpool
 import (
 	"errors"
 	"fmt"
-	//"git.apache.org/thrift.git/lib/go/thrift"
-	//"net"
-	//"time"
+	"time"
 )
-var(
-	defaultBufferSize int = 1024 * 500
+
+var (
+	ClientFactory = &ThriftPoolFactory{}
 )
 
 type ThriftPoolFactory struct {
 	pools map[string]*ThriftClientPool
 }
 
-func (factory *ThriftPoolFactory) NewPool(poolName, address, port string) error {
+func (factory *ThriftPoolFactory) NewPoolFullParam(poolName, address, port string, dialFn func() (connection interface{}, err error), closeFn func(connection interface{}) (err error), keepAliveFn func(connection interface{}) (err error), poolSize, initialPoolSize int) error {
 
-	if _, ok := factory.pools; ok {
+	if factory.pools == nil {
+		factory.pools = make(map[string]*ThriftClientPool)
+	}
+
+	if _, ok := factory.pools[poolName]; ok {
 		return errors.New(fmt.Sprintf("duplicate pool"))
 	}
 
+	tmp, err := NewThriftClientPool(poolName, address, port, dialFn, closeFn, keepAliveFn, poolSize, initialPoolSize)
+	if err != nil {
+		return err
+	}
+	tmp.KeepAliveInterval= time.Second * 5
+
+	factory.pools[poolName] = tmp
+	tmp.Start()
 	return nil
 }
 
-//func (factory *ThriftPoolFactory) defaultDial(name string) (connection interface{}, err error) {
-//
-//	pool, ok := factory.pools[name]
-//	if !ok {
-//		return nil, errors.New(fmt.Sprintf("Pool not exists %v,Should create pool first.", name))
-//	}
-//
-//	srvSocket, err := thrift.NewTSocketTimeout(net.JoinHostPort(pool.Address, pool.Port), time.Second*5)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	transport := thrift.NewTBufferedTransport(srvSocket, defaultBufferSize)
-//	protocol := thrift.NewTBinaryProtocolTransport(transport)
-//	mp_group := thrift.NewTMultiplexedProtocol(protocol, name)
-//	if err = transport.Open(); err != nil {
-//		return nil, err
-//	}
-//	//connection = emRpcSrv.NewGroupServiceClientProtocol(transport, mp_group, mp_group)
-//	return
-//}
+func (factory *ThriftPoolFactory) GetConnection(poolName string) (connection interface{}, err error) {
+
+	if p, ok := factory.pools[poolName]; ok {
+		return p.Get()
+	}
+
+	return nil, errors.New(fmt.Sprintf("Not found pool with name %v.", poolName))
+}
+
+func (factory *ThriftPoolFactory) PutConnection(poolName string, connection interface{}) {
+
+	if p, ok := factory.pools[poolName]; ok {
+		p.Put(connection)
+	}
+}

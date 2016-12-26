@@ -56,7 +56,7 @@ func (srv *BookServiceImpl) GetAllBooks() (r []*entity.Book, err error) {
 
 func (srv *BookServiceImpl) AddBook(bookInfo *entity.Book) (r bool, err error) {
 
-	if _, ok := bookStore[bookInfo.BookId]; ok {
+	if _, ok := bookStore[bookInfo.BookId]; !ok {
 		bookStore[bookInfo.BookId] = *bookInfo
 		return true, nil
 	}
