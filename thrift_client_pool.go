@@ -179,7 +179,7 @@ func (p *ThriftClientPool) retryLoop() {
 				if connection, err := p.Dial(); err == nil {
 					<-p.retryPool
 					p.alivePool <- connection
-					log.Println("Retry Pool Success, retryCircle: ", retryCircle)
+					log.Println("Retry Pool Success.")
 				} else {
 					log.Printf("Retry Pool Failed for %v times.", retryCircle)
 				}
@@ -197,7 +197,6 @@ func (p *ThriftClientPool) retryLoop() {
 func (p *ThriftClientPool) keepAliveLoop() {
 
 	log.Println("keepAlive loop start.")
-	retryCircle := 0
 
 	for {
 		select {
@@ -210,7 +209,7 @@ func (p *ThriftClientPool) keepAliveLoop() {
 						log.Printf("Keepalive Pool Success on %v\n", fmt.Sprintf("%v  %v:%v", p.Name, p.Address, p.Port))
 						p.swapPool <- connection
 					} else {
-						log.Printf("Keepalive Pool Failed, retry time: %v\n", retryCircle)
+						log.Printf("Keepalive Pool Failed on %v\n", fmt.Sprintf("%v  %v:%v", p.Name, p.Address, p.Port))
 						p.retryPool <- 0
 					}
 
