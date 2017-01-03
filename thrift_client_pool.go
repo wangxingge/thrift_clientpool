@@ -20,7 +20,7 @@ type ThriftClientPool struct {
 	Name              string
 	Address           string
 	Port              string
-	Dial              func() (connection interface{}, err error)
+	Dial              func(name, address, port string) (connection interface{}, err error)
 	Close             func(connection interface{}) (err error)
 	KeepAlive         func(connection interface{}) (err error)
 	MaxPoolSize       int
@@ -36,7 +36,7 @@ type ThriftClientPool struct {
 	isStopped         bool
 }
 
-func NewThriftClientPool(name, address, port string, dialFn func() (connection interface{}, err error), closeFn func(connection interface{}) (err error), keepAliveFn func(connection interface{}) (err error), poolSize, initialPoolSize int) (*ThriftClientPool, error) {
+func NewThriftClientPool(name, address, port string, dialFn func(name, address, port string) (connection interface{}, err error), closeFn func(connection interface{}) (err error), keepAliveFn func(connection interface{}) (err error), poolSize, initialPoolSize int) (*ThriftClientPool, error) {
 
 	if dialFn == nil || closeFn == nil || keepAliveFn == nil {
 		return nil, errors.New("function not specified.")
@@ -75,7 +75,7 @@ func NewThriftClientPool(name, address, port string, dialFn func() (connection i
 	pool.swapPool = make(chan interface{}, poolSize)
 
 	for i := 0; i < initialPoolSize; i++ {
-		if c, err := dialFn(); err == nil {
+		if c, err := dialFn(pool.Name, pool.Address, pool.Port); err == nil {
 			pool.alivePool <- c
 		}
 	}
@@ -100,7 +100,7 @@ func (p *ThriftClientPool) Get() (connection interface{}, err error) {
 
 			retry := 0
 			for retry < p.DialRetryCount {
-				if connection, err = p.Dial(); err != nil {
+				if connection, err = p.Dial(p.Name, p.Address, p.Port); err != nil {
 					retry++
 					continue
 				} else {
@@ -176,7 +176,7 @@ func (p *ThriftClientPool) retryLoop() {
 			retryCircle++
 			max := len(p.retryPool)
 			for i := 0; i < max; i++ {
-				if connection, err := p.Dial(); err == nil {
+				if connection, err := p.Dial(p.Name, p.Address, p.Port); err == nil {
 					<-p.retryPool
 					p.alivePool <- connection
 					log.Println("Retry Pool Success.")

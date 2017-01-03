@@ -14,7 +14,7 @@ type ThriftPoolFactory struct {
 	pools map[string]*ThriftClientPool
 }
 
-func (factory *ThriftPoolFactory) NewPoolFullParam(poolName, address, port string, dialFn func() (connection interface{}, err error), closeFn func(connection interface{}) (err error), keepAliveFn func(connection interface{}) (err error), poolSize, initialPoolSize int) error {
+func (factory *ThriftPoolFactory) NewPoolFullParam(poolName, address, port string, dialFn func(name, address, port string) (connection interface{}, err error), closeFn func(connection interface{}) (err error), keepAliveFn func(connection interface{}) (err error), poolSize, initialPoolSize int) error {
 
 	if factory.pools == nil {
 		factory.pools = make(map[string]*ThriftClientPool)
@@ -28,7 +28,7 @@ func (factory *ThriftPoolFactory) NewPoolFullParam(poolName, address, port strin
 	if err != nil {
 		return err
 	}
-	tmp.KeepAliveInterval= time.Second * 5
+	tmp.KeepAliveInterval= time.Second
 
 	factory.pools[poolName] = tmp
 	tmp.Start()
