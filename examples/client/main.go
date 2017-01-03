@@ -80,7 +80,7 @@ func addBook() {
 
 }
 
-func dialBook() (connection interface{}, err error) {
+func dialBook(name, address, port string) (connection interface{}, err error) {
 
 	srvSocket, err := thrift.NewTSocketTimeout(net.JoinHostPort(address, port), time.Second*5)
 	if err != nil {
