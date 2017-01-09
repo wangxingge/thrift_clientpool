@@ -77,6 +77,8 @@ func NewThriftClientPool(name, address, port string, dialFn func(name, address, 
 	for i := 0; i < initialPoolSize; i++ {
 		if c, err := dialFn(pool.Name, pool.Address, pool.Port); err == nil {
 			pool.alivePool <- c
+		} else {
+			pool.retryPool <- 0
 		}
 	}
 
@@ -168,12 +170,9 @@ func (p *ThriftClientPool) retryLoop() {
 
 	log.Println("retry loop start.")
 
-	retryCircle := 0
 	for {
 		select {
 		case <-time.After(p.DialRetryInterval):
-
-			retryCircle++
 			max := len(p.retryPool)
 			for i := 0; i < max; i++ {
 				if connection, err := p.Dial(p.Name, p.Address, p.Port); err == nil {
@@ -181,7 +180,7 @@ func (p *ThriftClientPool) retryLoop() {
 					p.alivePool <- connection
 					log.Println("Retry Pool Success.")
 				} else {
-					log.Printf("Retry Pool Failed for %v times.", retryCircle)
+					log.Printf("Retry Pool Failed.")
 				}
 			}
 
