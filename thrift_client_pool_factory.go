@@ -28,7 +28,7 @@ func (factory *ThriftPoolFactory) NewPoolFullParam(poolName, address, port strin
 	if err != nil {
 		return err
 	}
-	tmp.KeepAliveInterval= time.Second
+	tmp.KeepAliveInterval = time.Second
 
 	factory.pools[poolName] = tmp
 	tmp.Start()
@@ -48,5 +48,11 @@ func (factory *ThriftPoolFactory) PutConnection(poolName string, connection inte
 
 	if p, ok := factory.pools[poolName]; ok {
 		p.Put(connection)
+	}
+}
+
+func (factory *ThriftPoolFactory) SetKeepAliveInterval(poolName string, interval time.Duration) {
+	if p, ok := factory.pools[poolName]; ok {
+		p.KeepAliveInterval = interval
 	}
 }
