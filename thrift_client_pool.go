@@ -205,7 +205,7 @@ func (p *ThriftClientPool) keepAliveLoop() {
 				// send keep alive message to each connection
 				for connection := range p.alivePool {
 					if err := p.KeepAlive(connection); err == nil {
-						log.Printf("Keepalive Pool Success on %v\n", fmt.Sprintf("%v  %v:%v", p.Name, p.Address, p.Port))
+						//log.Printf("Keepalive Pool Success on %v\n", fmt.Sprintf("%v  %v:%v", p.Name, p.Address, p.Port))
 						p.swapPool <- connection
 					} else {
 						log.Printf("Keepalive Pool Failed on %v\n", fmt.Sprintf("%v  %v:%v", p.Name, p.Address, p.Port))
